@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+  nodetest:
+    build: .
+    container_name: nodetest
+    command: npm run dev
+    restart: unless-stopped
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/base
+    volumes:
+      - ./:/usr/src
+      - ./node_modules:/usr/src/node_modules
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - ./docker/mongo/data:/data/db
+
