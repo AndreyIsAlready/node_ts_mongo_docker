@@ -16,8 +16,8 @@ export default class WriteJsonInDbService {
     async writeJsonInDb(): Promise<void> {
         try {
             await this.removeAndWriteInDb(Result, entitiesJson);
-            const countryStudentsDocuments = await this.removeAndWriteInDb(CountryStudents, countryStudentsJson);
-            const entityDocuments = await this.removeAndWriteInDb(Entity, entitiesJson);
+            await this.removeAndWriteInDb(CountryStudents, countryStudentsJson);
+            await this.removeAndWriteInDb(Entity, entitiesJson);
 
             // @ts-ignore
             const result = await Entity.aggregate()
