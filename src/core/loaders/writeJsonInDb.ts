@@ -9,13 +9,11 @@ import Entity from "../../bussinesLayer/models/Entity";
 import Logger from "../logger";
 import Result from "../../bussinesLayer/models/Result";
 import {Model} from "mongoose";
-import IResult from "../../bussinesLayer/interfaces/IResult";
 
 export default class WriteJsonInDbService {
 
     async writeJsonInDb(): Promise<void> {
         try {
-            await this.removeAndWriteInDb(Result, entitiesJson);
             await this.removeAndWriteInDb(CountryStudents, countryStudentsJson);
             await this.removeAndWriteInDb(Entity, entitiesJson);
 
@@ -61,9 +59,9 @@ export default class WriteJsonInDbService {
     };
 
     private async removeAndWriteInDb(
-        document: Model<IEntity> | Model<ICountryStudents> | Model<IResult>,
+        document: Model<IEntity> | Model<ICountryStudents>,
         data: any,
-    ): Promise<IEntity[] | ICountryStudents[] | IResult> {
+    ): Promise<IEntity[] | ICountryStudents[]> {
         await document.deleteMany({});
         // @ts-ignore
         return await document.insertMany(data);
