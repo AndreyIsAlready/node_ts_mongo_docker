@@ -19,7 +19,6 @@ export default class WriteJsonInDbService {
             await this.removeAndWriteInDb(CountryStudents, countryStudentsJson);
             await this.removeAndWriteInDb(Entity, entitiesJson);
 
-            // @ts-ignore
             await Entity.aggregate([
                 {
                     $lookup: {
