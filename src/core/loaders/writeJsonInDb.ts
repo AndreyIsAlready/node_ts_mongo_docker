@@ -20,10 +20,17 @@ export default class WriteJsonInDbService {
             await this.removeAndWriteInDb(Entity, entitiesJson);
 
             // @ts-ignore
-            const result = await Entity.aggregate()
-                .lookup({from: "country_students", localField: "country", foreignField: "country", as: "country_students"})
-                .addFields(
-                    {
+            await Entity.aggregate([
+                {
+                    $lookup: {
+                        from: "country_students",
+                        localField: "country",
+                        foreignField: "country",
+                        as: "country_students"
+                    }
+                },
+                {
+                    $addFields: {
                         "longitude": {$first: "$location.ll"},
                         "latitude": {$last: "$location.ll"},
                         "allDiffs": {
@@ -34,18 +41,20 @@ export default class WriteJsonInDbService {
                             }
                         }
                     }
-                )
-                .group(
-                    {
+                },
+                {
+                    $group: {
                         _id: "$country",
                         allDiffs: {$push: "$allDiffs"},
                         longitude: {$push: "$longitude"},
                         latitude: {$push: "$latitude"},
                         count: {$sum: 1}
                     }
-                );
-
-            await Result.insertMany(result);
+                },
+                {
+                    $merge: {into: "results"}
+                }
+            ]);
             await Result.deleteMany({allDiffs: []});
         } catch (e) {
             Logger.error(e);
