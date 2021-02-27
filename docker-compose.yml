@@ -6,7 +6,7 @@ services:
     command: npm run dev
     restart: unless-stopped
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_URI=mongodb://mongodb:27017/base
     volumes:
       - ./:/usr/src
       - ./node_modules:/usr/src/node_modules
