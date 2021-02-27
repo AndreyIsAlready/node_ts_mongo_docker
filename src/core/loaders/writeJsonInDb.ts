@@ -35,18 +35,18 @@ export default class WriteJsonInDbService {
                         }
                     }
                 )
-                .project(
+                .group(
                     {
-                            entity_id: "$country",
-                            allDiffs: "$allDiffs",
-                            longitude: "$longitude",
-                            latitude: "$latitude"
+                        _id: "$country",
+                        allDiffs: {$push: "$allDiffs"},
+                        longitude: {$push: "$longitude"},
+                        latitude: {$push: "$latitude"},
+                        count: {$sum: 1}
                     }
                 );
+
             await Result.insertMany(result);
             await Result.deleteMany({allDiffs: []});
-            // this.setLongitudeAndLatitude(entityDocuments as IEntity[]);
-            // this.setAllDiffs(countryStudentsDocuments as ICountryStudents[]);
         } catch (e) {
             Logger.error(e);
         }
@@ -59,40 +59,5 @@ export default class WriteJsonInDbService {
         await document.deleteMany({});
         // @ts-ignore
         return await document.insertMany(data);
-    }
-
-    private async setLongitudeAndLatitude(entityDocuments: IEntity[]) {
-        entityDocuments.forEach((entityDocument: any) => {
-            entityDocument.longitude = entityDocument.location.ll[0];
-            entityDocument.latitude = entityDocument.location.ll[1];
-            entityDocument.save();
-        });
-    }
-
-    private async setAllDiffs(countryStudentsDocuments: ICountryStudents[]) {
-        for (let countryStudentDocument of countryStudentsDocuments) {
-            const entities = await Entity.find({country: countryStudentDocument.country});
-            this.diffStudents(entities, countryStudentDocument);
-        }
-    }
-
-    private async diffStudents(entities: IEntity[], countryStudentDocument: ICountryStudents) {
-        for (let entity of entities) {
-            const result = new Result();
-            const allDiffs: any[] = [];
-            result.entity_id = countryStudentDocument.country;
-
-            entity.students.forEach(students => {
-                allDiffs.push({year: students.year, number: students.number - countryStudentDocument.overallStudents});
-            });
-            entity.allDiffs = allDiffs;
-            result.allDiffs = allDiffs;
-            result.count = await Entity.count({country: countryStudentDocument.country});
-            result.latitude = entity.latitude;
-            result.longitude = entity.longitude;
-
-            result.save();
-            entity.save();
-        }
     }
 }

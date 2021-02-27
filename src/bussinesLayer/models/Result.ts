@@ -3,11 +3,11 @@ import IResult from "../interfaces/IResult";
 
 const results = new mongoose.Schema(
     {
-        entity_id: String,
+        _id: String,
         allDiffs: Array,
         count: Number,
-        longitude: Number,
-        latitude: Number,
+        longitude: Array,
+        latitude: Array,
     },
 );
 
