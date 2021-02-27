@@ -3,7 +3,7 @@ import { Db } from "mongodb";
 
 export default async (mongodbUri: string): Promise<Db> => {
     try{
-        const connection = await mongoose.connect(mongodbUri, {
+        const connection = await mongoose.connect(`${mongodbUri}/base`, {
             useNewUrlParser: true,
             useCreateIndex: true,
             useUnifiedTopology: true,

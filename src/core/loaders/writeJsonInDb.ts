@@ -12,13 +12,41 @@ import {Model} from "mongoose";
 import IResult from "../../bussinesLayer/interfaces/IResult";
 
 export default class WriteJsonInDbService {
+
     async writeJsonInDb(): Promise<void> {
         try {
             await this.removeAndWriteInDb(Result, entitiesJson);
             const countryStudentsDocuments = await this.removeAndWriteInDb(CountryStudents, countryStudentsJson);
             const entityDocuments = await this.removeAndWriteInDb(Entity, entitiesJson);
-            this.setLongitudeAndLatitude(entityDocuments as IEntity[]);
-            this.setAllDiffs(countryStudentsDocuments as ICountryStudents[]);
+
+            // @ts-ignore
+            const result = await Entity.aggregate()
+                .lookup({from: "country_students", localField: "country", foreignField: "country", as: "country_students"})
+                .addFields(
+                    {
+                        "longitude": {$first: "$location.ll"},
+                        "latitude": {$last: "$location.ll"},
+                        "allDiffs": {
+                            $map: {
+                                input: "$students",
+                                as: "value",
+                                in: {year: "$$value.year", number: {$subtract : [ "$$value.number", {$first: "$country_students.overallStudents"} ]} }
+                            }
+                        }
+                    }
+                )
+                .project(
+                    {
+                            entity_id: "$country",
+                            allDiffs: "$allDiffs",
+                            longitude: "$longitude",
+                            latitude: "$latitude"
+                    }
+                );
+            await Result.insertMany(result);
+            await Result.deleteMany({allDiffs: []});
+            // this.setLongitudeAndLatitude(entityDocuments as IEntity[]);
+            // this.setAllDiffs(countryStudentsDocuments as ICountryStudents[]);
         } catch (e) {
             Logger.error(e);
         }
@@ -28,7 +56,7 @@ export default class WriteJsonInDbService {
         document: Model<IEntity> | Model<ICountryStudents> | Model<IResult>,
         data: any,
     ): Promise<IEntity[] | ICountryStudents[] | IResult> {
-        await document.remove({});
+        await document.deleteMany({});
         // @ts-ignore
         return await document.insertMany(data);
     }

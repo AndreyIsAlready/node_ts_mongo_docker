@@ -9,7 +9,6 @@ const results = new mongoose.Schema(
         longitude: Number,
         latitude: Number,
     },
-    {timestamps: true},
 );
 
 export default mongoose.model<IResult>("results", results);
